@@ -1,6 +1,6 @@
-package org.bk.routesample.handler
+package sample.handler
 
-import org.bk.routesample.domain.Message
+import sample.domain.Message
 import org.springframework.http.HttpStatus.*
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters.fromObject
