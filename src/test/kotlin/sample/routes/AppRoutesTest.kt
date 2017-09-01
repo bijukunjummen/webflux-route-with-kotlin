@@ -1,60 +1,85 @@
 package sample.routes
 
-import org.junit.Before
 import org.junit.Test
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
-import sample.domain.Message
-import sample.handler.MessageHandler
+import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.router
 
 class AppRoutesTest {
 
-    lateinit var client: WebTestClient
-
-    @Before
-    fun setUp(): Unit {
-        this.client = WebTestClient.bindToRouterFunction(AppRoutes(MessageHandler()).apis()).build()
-    }
-
     @Test
-    fun testMessages() {
-        this.client.post()
-                .uri("/messages")
-                .body(BodyInserters.fromObject(Message("1", "one")))
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody()
-                .jsonPath("$.id")
-                .isEqualTo(1)
+    fun testSimpleGet() {
+        val routerFunction = router {
+            GET("/isokay", { _ -> ok().build() })
+            GET("/isokay2")({ _ -> ok().build() })
+            "/isokay3" { _ -> ok().build() }
+        }
 
-        this.client.post()
-                .uri("/messages")
-                .body(BodyInserters.fromObject(Message("2", "two")))
-                .exchange()
-                .expectStatus().isCreated
-                .expectBody()
-                .jsonPath("$.id")
-                .isEqualTo(2)
+        val client = WebTestClient.bindToRouterFunction(routerFunction).build()
 
-        this.client.get()
-                .uri("/messages")
+        client.get()
+                .uri("/isokay")
                 .exchange()
                 .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.[0].id")
-                .isEqualTo(1)
 
-        this.client.delete()
-                .uri("/messages/1")
-                .exchange()
-                .expectStatus().isAccepted
-
-        this.client.get()
-                .uri("/messages")
+        client.get()
+                .uri("/isokay2")
                 .exchange()
                 .expectStatus().isOk
-                .expectBody()
-                .jsonPath("$.[0].id")
-                .isEqualTo(2)
+
+        client.get()
+                .uri("/isokay3")
+                .exchange()
+                .expectStatus().isOk
     }
+
+//    @Test
+//    fun testNested() {
+//        val routerFunction = router {
+//            ("/api" and accept(MediaType.APPLICATION_JSON) and contentType(MediaType.APPLICATION_JSON)).nest {
+//                POST("/create", { req ->
+//                    status(HttpStatus.CREATED).body(bodyFromPublisher(req.bodyToMono(Message::class.java)))
+//                })
+//                PUT("/update", { req ->
+//                    status(HttpStatus.ACCEPTED).body(bodyFromPublisher(req.bodyToMono(Message::class.java)))
+//                })
+//            }
+//        }
+//
+//        val client = WebTestClient.bindToRouterFunction(routerFunction).build()
+//
+//        client.post()
+//                .uri("/api/create")
+//                .body(BodyInserters.fromObject(Message("1", "one")))
+//                .exchange()
+//                .expectStatus().isCreated
+//                .expectBody()
+//                .jsonPath("$.payload")
+//                .isEqualTo("one")
+//
+//        client.put()
+//                .uri("/api/update")
+//                .body(BodyInserters.fromObject(Message("1", "one")))
+//                .exchange()
+//                .expectStatus().isAccepted
+//                .expectBody()
+//                .jsonPath("$.payload")
+//                .isEqualTo("one")
+//    }
+//
+//    @Test
+//    fun testResources() {
+//        val routerFunction = router {
+//            resources("/someresource/**",
+//                    ClassPathResource("/someresource/response.txt"))
+//        }
+//        
+//        val client = WebTestClient.bindToRouterFunction(routerFunction).build()
+//
+//        client.get()
+//                .uri("/someresource/response.txt")
+//                .exchange()
+//                .expectStatus().isOk
+//
+//    }
 }
